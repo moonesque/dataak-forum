@@ -15,8 +15,9 @@ class ForumGrabSpider(CrawlSpider):
 
     rules = (
         Rule(LinkExtractor(restrict_xpaths='//td/strong/a')),
-        Rule(LinkExtractor(restrict_xpaths='//a[@class="pagination_next"])')),
-        Rule(LinkExtractor(restrict_xpaths='//span[@class=" subject_old"]/a'), follow=True, callback='parse_thread'),
+        Rule(LinkExtractor(restrict_xpaths='//a[@class="pagination_next"]')),
+        Rule(LinkExtractor(restrict_xpaths='//span[@class=" subject_old" or @class=" subject_new"]/a'),
+             follow=True, callback='parse_thread'),
     )
 
     def start_requests(self):
@@ -33,7 +34,7 @@ class ForumGrabSpider(CrawlSpider):
             response,
             formnumber=1,
             formdata={'quick_username': 'mahan', 'quick_password': '@123456'},
-            callback=self.after_login
+            # callback=self.after_login
         )
 
     # def after_login(self, response):
@@ -41,11 +42,39 @@ class ForumGrabSpider(CrawlSpider):
     #         f.write(response.body)
 
     def parse_thread(self, response):
-        pass
+        item = DataakForumItem()
+        # self.log("thread: %s" % response.xpath(
+        #     '//span[@class="active"]/text()').extract())
+        # a = input("Something?")
+
+        thread = '//span[@class="active"]/text()'
+        navpath = '//div[@class="navigation"]/a/text()'
+        posts = '//div[@class="post "]'
+        author_not_admin = '//div[@class="author_information"]//a/text()'
+        author = './/div[@class="author_information"]//a/text() | .//div[@class="author_information"]//em/text()'
+        body = './/div[@class="post_body scaleimages"]/text()'
+
+        posts_selector = response.xpath(posts)
+        for post in posts_selector:
+
+            item['url'] = response.url
+            self.log(response.url)
+
+            item['thread'] = response.xpath('//span[@class="active"]/text()').extract()
+            self.log("thread: %s" % response.xpath('//span[@class="active"]/text()').extract())
+
+            item['navpath'] = response.xpath(navpath).extract()
+            self.log("nav path: %s" % response.xpath(navpath).extract())
+
+            item['author'] = post.xpath(author).extract()
+            self.log("author: %s" % post.xpath(author).extract())
+
+            item['body'] =  post.xpath(body).extract()
+            self.log("body: %s" % post.xpath(body).extract())
+
+            return item
+            a = input("%%%%something?")
 
 
 
-
-    def parse(self, response):
-        item = ItemLoader(item=DataakForumItem(), response=response)
 

@@ -3,7 +3,9 @@ import scrapy
 
 class DataakForumItem(scrapy.Item):
 
-    subject = scrapy.Field()
-    user = scrapy.Field()
-    post = scrapy.Field()
+    thread = scrapy.Field()
+    author = scrapy.Field()
+    body = scrapy.Field()
+    url = scrapy.Field()
+    navpath = scrapy.Field()
 
