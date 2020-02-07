@@ -63,9 +63,6 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'dataak_forum.pipelines.DataakForumPipeline': 300,
-# }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -89,6 +86,13 @@ ROBOTSTXT_OBEY = True
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
+# Custom pipeline for storing items in MySQL DB
+ITEM_PIPELINES = {
+   'dataak_forum.pipelines.DataakForumPipeline': 300,
+}
+
+
+# CONNECTION_STRING used for connecting to MySQL on host machine
 CONNECTION_STRING = "{drivername}://{user}:{passwd}@{host}:{port}/{db_name}?charset=utf8".format(
     drivername="mysql",
     user="root",

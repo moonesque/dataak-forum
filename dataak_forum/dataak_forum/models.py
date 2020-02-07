@@ -21,24 +21,33 @@ def create_table(engine):
 
 
 class Threads(DeclarativeBase):
+    """
+    Database model for Threads table
+    """
     __tablename__ = "threads"
 
     id = Column(Integer, primary_key=True)
-    forum_id = Column(Integer, ForeignKey('forums.id'))
-    thread = Column(UnicodeText())
-    forum = Column(UnicodeText())
-    url = Column(String(100))
+    # forum_id = Column(Integer, ForeignKey('forums.id'))
+    thread = Column(Text)
+    forum = Column(Text)
+    url = Column(Text)
 
 
 class Posts(DeclarativeBase):
+    """
+    Database model for Posts table
+    """
     __tablename__ = 'posts'
     id = Column(Integer, primary_key=True)
     thread_id = Column(Integer, ForeignKey('threads.id'))
-    body = Column(UnicodeText())
-    author = Column(UnicodeText())
+    body = Column(Text)
+    author = Column(Text)
 
 
 class Forums(DeclarativeBase):
+    """
+    Database model for Forums table
+    """
     __tablename__ = 'forums'
     id = Column(Integer, primary_key=True)
-    forum = Column(UnicodeText())
+    forum = Column(Text)

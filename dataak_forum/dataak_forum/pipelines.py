@@ -21,29 +21,43 @@ class DataakForumPipeline(object):
         self.Session = sessionmaker(bind=engine)
 
     def process_item(self, item, spider):
-        """Save deals in the database.
+        """
 
         This method is called for every item pipeline component.
         """
         session = self.Session()
 
         if item.get('url'):
+            thread = session.query(Threads).filter_by(url=item['url']).first()
+            if not thread:
+                thread = Threads(thread=item['thread'], forum=item['forum'], url=item['url'])
+                session.add(thread)
+                session.commit()
 
+            postdb = Posts(thread_id=thread.id)
+            postdb.body = ''.join(item['body'])
+            postdb.author = item['author']
+
+            try:
+                session.add(thread)
+                session.add(postdb)
+                session.commit()
+            except:
+                session.rollback()
+                raise
+            finally:
+                session.close()
+            return item
+
+        elif item.get('forum'):
             forumdb = Forums()
-            # forumdb.forum
-
-            threaddb = Threads()
-            threaddb.thread = item["thread"]
-            threaddb.forum = item["forum"]
-        #     threaddb.url = item["url"]
-        #
-        #     try:
-        #         session.add(threaddb)
-        #         session.commit()
-        #     except:
-        #         session.rollback()
-        #     raise
-        # finally:
-        #     session.close()
-        #
-        # return item
+            forumdb.forum = item['forum']
+            try:
+                session.add(forumdb)
+                session.commit()
+            except:
+                session.rollback()
+                raise
+            finally:
+                session.close()
+            return item
