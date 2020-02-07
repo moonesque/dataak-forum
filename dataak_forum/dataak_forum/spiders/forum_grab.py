@@ -4,7 +4,7 @@ from scrapy.http import FormRequest, Request
 from scrapy.linkextractors import LinkExtractor
 from scrapy.loader import ItemLoader
 
-from ..items import DataakForumItem
+from ..items import DataakForumItem, ForumItem
 
 
 class ForumGrabSpider(CrawlSpider):
@@ -14,7 +14,7 @@ class ForumGrabSpider(CrawlSpider):
                  'Safari/537.36 '
 
     rules = (
-        Rule(LinkExtractor(restrict_xpaths='//td/strong/a')),
+        Rule(LinkExtractor(restrict_xpaths='//td/strong/a'), follow=True, callback='parse_forum'),
         Rule(LinkExtractor(restrict_xpaths='//a[@class="pagination_next"][1]'), follow=True, callback='parse_thread'),
         Rule(LinkExtractor(restrict_xpaths='//span[@class=" subject_old" or @class=" subject_new" or '
                                            '@class="subject_editable subject_old"]/a'),
@@ -38,12 +38,14 @@ class ForumGrabSpider(CrawlSpider):
             # callback=self.after_login
         )
 
-    # def after_login(self, response):
-    #     with open('myfile.html', 'w') as f:
-    #         f.write(response.body)
+    # def after_login(self, response, **kwargs):
+    #     forum_obj = response.xpath('//td/strong/a')
+    #     for f in forum_obj:
+    #         yield Request(f.extract(), callback=self.after_login, cb_kwargs={'forums': forums})
 
     def parse_thread(self, response):
         item = DataakForumItem()
+
         # self.log("thread: %s" % response.xpath(
         #     '//span[@class="active"]/text()').extract())
         # a = input("Something?")
@@ -57,24 +59,26 @@ class ForumGrabSpider(CrawlSpider):
 
         posts_selector = response.xpath(posts)
         for post in posts_selector:
-
             item['url'] = response.url
             self.log(response.url)
 
-            item['thread'] = response.xpath('//span[@class="active"]/text()').extract()
-            self.log("thread: %s" % response.xpath('//span[@class="active"]/text()').extract())
+            item['thread'] = response.xpath(thread).extract_first()
+            self.log("thread: %s" % response.xpath(thread).extract())
 
-            item['navpath'] = response.xpath(navpath).extract()
+            item['forum'] = response.xpath(navpath).extract()[-1]  # get the last item which is the forum name
             self.log("nav path: %s" % response.xpath(navpath).extract())
 
-            item['author'] = post.xpath(author).extract()
+            item['author'] = post.xpath(author).extract_first()
             self.log("author: %s" % post.xpath(author).extract())
 
-            item['body'] =  post.xpath(body).extract()
+            item['body'] = post.xpath(body).extract()
             self.log("body: %s" % post.xpath(body).extract())
 
             yield item
 
+    def parse_forum(self, response):
 
-
+        item = ForumItem()
+        item['forum'] = response.xpath('//span[@class="active"]/text()').extract_first()
+        yield item
 
