@@ -15,8 +15,9 @@ class ForumGrabSpider(CrawlSpider):
 
     rules = (
         Rule(LinkExtractor(restrict_xpaths='//td/strong/a')),
-        Rule(LinkExtractor(restrict_xpaths='//a[@class="pagination_next"]')),
-        Rule(LinkExtractor(restrict_xpaths='//span[@class=" subject_old" or @class=" subject_new"]/a'),
+        Rule(LinkExtractor(restrict_xpaths='//a[@class="pagination_next"][1]'), follow=True, callback='parse_thread'),
+        Rule(LinkExtractor(restrict_xpaths='//span[@class=" subject_old" or @class=" subject_new" or '
+                                           '@class="subject_editable subject_old"]/a'),
              follow=True, callback='parse_thread'),
     )
 
@@ -52,7 +53,7 @@ class ForumGrabSpider(CrawlSpider):
         posts = '//div[@class="post "]'
         author_not_admin = '//div[@class="author_information"]//a/text()'
         author = './/div[@class="author_information"]//a/text() | .//div[@class="author_information"]//em/text()'
-        body = './/div[@class="post_body scaleimages"]/text()'
+        body = './/div[@class="post_body scaleimages"]/text() | .//div[@class="post_body scaleimages"]//*/text()'
 
         posts_selector = response.xpath(posts)
         for post in posts_selector:
@@ -72,8 +73,7 @@ class ForumGrabSpider(CrawlSpider):
             item['body'] =  post.xpath(body).extract()
             self.log("body: %s" % post.xpath(body).extract())
 
-            return item
-            a = input("%%%%something?")
+            yield item
 
 
 
